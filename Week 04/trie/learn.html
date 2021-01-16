@@ -1,0 +1,29 @@
+<script>
+    let $ = Symbol('$')
+    class Trie{
+        constructor(){
+            this.root = Object.create(null)
+        }
+
+        insert(str){
+            let node = this.root
+
+            for(let c of str){
+                if(!node[c]){
+                    node[c] = Object.create(null)
+                }
+
+                // console.log(node[c], 'node-----c');
+                node = node[c]
+            }
+
+            if(!($ in node))
+                node[$] = 0
+               
+            node[$] ++    
+        }
+    }
+
+    let trie = new Trie()
+    trie.insert('refg')
+</script>

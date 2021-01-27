@@ -1,0 +1,84 @@
+<div id="text">
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字 这是文字
+    这是文字 这是文字 这是文字 这是文字 这是文字
+</div>
+<div id="dragable" style="display:inline-block; width: 100px;height: 100px; background: darkblue;"></div>
+
+<script>
+    let dragable = document.getElementById('dragable')
+
+    // 存储方块每一次停下的位置
+    let initX = 0, initY = 0
+    dragable.addEventListener('mousedown', function (event) {
+        // 存储方块初始信息
+        let startX = event.clientX, startY = event.clientY
+
+        const move = (event) => {
+            // console.log(event);
+            let moveX = initX + event.clientX - startX, moveY = initY + event.clientY - startY
+            // dragable.style.transform = `translate(${moveX}px, ${moveY}px)`
+
+            let range = getNest(moveX, moveY)
+            range.insertNode(dragable)
+        }
+        const up = (event) => {
+            // console.log(event);
+            initX = event.clientX, initY = event.clientY
+            document.removeEventListener('mousemove', move)
+            document.removeEventListener('mouseup', up)
+        }
+
+        document.addEventListener('mousemove', move)
+        document.addEventListener('mouseup', up)
+
+    })
+
+    let ranges = [];
+    let text = document.getElementById('text');
+
+    for(let i=0;i < text.childNodes[0].textContent.length;i++){
+       
+        let range = document.createRange()
+        range.setStart(text.childNodes[0], i)
+        range.setEnd(text.childNodes[0], i)
+
+        // console.log(range.getBoundingClientRect(), 'range----');
+        ranges.push(range)
+    }
+
+    // 判断离得最近的一个点
+    function getNest(x,y){
+        let min = Infinity;
+        let minRange = null
+
+        for(let i=0;i<ranges.length;i++){
+            const range = ranges[i]
+
+            let rect = range.getBoundingClientRect();
+            let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2
+
+            if(distance < min){
+                min = distance
+                minRange = range
+            }
+        }
+
+        return minRange
+    }
+
+    document.addEventListener('selectstart', event => event.preventDefault())
+
+</script>

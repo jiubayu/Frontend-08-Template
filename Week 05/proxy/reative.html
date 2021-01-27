@@ -1,0 +1,103 @@
+<input type="range" id="r" min=0 max=255 />
+<input type="range" id="g" min=0 max=255 >
+<input type="range" id="b" min=0 max=255 >
+
+<div id="artboard" style="width: 100px; height: 100px; border: 1px solid"></div>
+<script>
+    function $(id){
+        return document.getElementById(id)
+    }
+
+    let callbacks = new Map()
+    let usedReactivties = []
+    let reactivities = new Map()
+
+    // base
+    let obj = {
+       r: 1,
+       g: 1,
+       b: 1
+    }
+
+    // let data = new Proxy(obj, {
+    //     set(obj, prop, val){
+    //         console.log(obj, prop, val);
+    //     }
+    // })
+    // ----------------------------------------------------------------
+
+  
+    let po = reactive(obj)
+
+    // 性能优化点： 100个触发100次性能消耗太多，需要进行优化
+    // 优化点 只监控触发的方法或属性
+    effect(() => {
+       $('r').value = po.r
+       $('g').value = po.g
+       $('b').value = po.b
+    })
+
+    $('r').addEventListener('input', event => {
+        $('artboard').style.backgroundColor = `rgb(${event.target.value}, ${po.g}, ${po.b})`
+    })
+    $('g').addEventListener('input', event => {
+        $('artboard').style.backgroundColor = `rgb(${po.r}, ${event.target.value}, ${po.b})`
+    })
+    $('b').addEventListener('input', event => {
+        $('artboard').style.backgroundColor = `rgb(${po.r}, ${po.g}, ${event.target.value})`
+    })
+
+    function effect(callback){
+        // callbacks.push(callback)
+        // 先清空
+        usedReactivties = []
+        callback()
+        console.log(usedReactivties)
+
+        for(let reactive of usedReactivties){
+            // 防御代码： 防止同一对象进行重复注册
+            if(!callbacks.has(reactive[0])){
+                callbacks.set(reactive[0], new Map())
+            }
+            // 第二层：防止对对象下的同一个属性进行重复注册   
+            if(!callbacks.get(reactive[0]).has(reactive[1])){
+                callbacks.get(reactive[0]).set(reactive[1], [])
+            }
+
+            callbacks.get(reactive[0]).get(reactive[1]).push(callback)
+        }
+    }
+    // vue3 响应式 reactive
+    function reactive(object){
+        // 缓存处理
+        if(reactivities.has(object))
+            return reactivities.get(object)
+
+
+        let proxy = new Proxy(object, {
+            set(obj, prop, val){
+                obj[prop] = val
+
+                if(callbacks.get(obj))
+                    if(callbacks.get(obj).get(prop))
+                        for (let callback of callbacks.get(obj).get(prop)) {
+                            callback()
+                        }
+               
+                return obj[prop]
+            },
+            get(obj, prop){
+                usedReactivties.push([obj, prop])
+
+                // 这个时候的proxy并非是同一个，所以需要全局的变量进行proxy的存储
+                if(typeof obj[prop] === 'object')
+                    return reactive(obj[prop])
+
+                return obj[prop]
+            }
+        })
+
+        reactivities.set(object, proxy)
+        return proxy
+    }
+</script>

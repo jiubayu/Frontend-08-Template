@@ -1,0 +1,28 @@
+<div id="dragable" style="width: 100px;height: 100px; background: darkblue;"></div>
+
+<script>
+    let dragable = document.getElementById('dragable')
+
+    // 存储方块每一次停下的位置
+    let initX = 0, initY = 0
+    dragable.addEventListener('mousedown', function(event){
+        // 存储方块初始信息
+        let startX = event.clientX, startY = event.clientY
+
+        const move = (event) => {
+            // console.log(event);
+            let moveX = initX + event.clientX - startX, moveY = initY + event.clientY - startY
+            dragable.style.transform = `translate(${moveX}px, ${moveY}px)`
+        }
+        const up = (event) => {
+            // console.log(event);
+            initX = event.clientX, initY = event.clientY
+            document.removeEventListener('mousemove', move)
+            document.removeEventListener('mouseup', up)
+        }
+
+        document.addEventListener('mousemove', move)
+        document.addEventListener('mouseup', up)
+
+    })
+</script>
